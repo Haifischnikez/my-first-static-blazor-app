@@ -1,12 +1,27 @@
+
+
 @page "/fetchdata"
+
 @using BlazorApp.Shared 
 @inject HttpClient Http
 
+@using Webapplication_erster_versuch__server_app_.Data
+@using Microsoft.Extensions.Logging
+@inject WeatherForecastService ForecastService
+@inject ILogger<FetchData> Logger
+
+
 <h1>Weather forecast</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+<input @bind="pStadt" />
+<button type="button" class="btn btn-primary" @onclick="join">Bestätigen</button>
+<button type="button" class="btn btn-primary" @onclick="löschen">Letzte Löschen</button>
+<button type="button" class="btn btn-primary" @onclick="löschen_ultra">Alle Löschen</button>
 
-@if (forecasts == null)
+<br />
+<br />
+
+@if (forecasts1 == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -15,20 +30,28 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Location</th>
                 <th>Date</th>
+                <th>Humdity</th>
                 <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Pressure (hPa)</th>
+                <th>Clouds (in % of sky)</th>
+                <th>Windspeed (m/s)</th>
+                <th>Winddirection (Degree)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var fc in forecasts1)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@fc.Location</td>
+                    <td>@fc.Date.ToShortDateString()</td>
+                    <td>@fc.Humdity</td>
+                    <td>@fc.TemperatureC</td>
+                    <td>@fc.Pressure</td>
+                    <td>@fc.Clouds</td>
+                    <td>@fc.Wind_Speed</td>
+                    <td>@fc.Wind_Direction</td>
                 </tr>
             }
         </tbody>
@@ -36,17 +59,97 @@ else
 }
 
 @code {
-    private WeatherForecast[] forecasts;
+    private List<WeatherForecast> forecasts1 = new List<WeatherForecast>();
+    private String pStadt;
+    private WeatherForecastService go = new WeatherForecastService();
+
+
+
 
     protected override async Task OnInitializedAsync()
     {
-      try
-      {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("/api/WeatherForecast");
-      }
-      catch (Exception ex)
-      {
-        Console.WriteLine(ex.ToString());
-      }
+        setup();
     }
+
+    public void setup()
+    {
+
+        var forecasts_temp = go.lol("Berlin");
+        forecasts1.Add(forecasts_temp);
+
+
+        // var result = go.stadt_arrow("Berlin").ToList();
+        // forecasts1.AddRange(result);
+        // var stadt = forecasts1.Last().Location;
+    }
+
+
+    public void join()
+    {
+        if (pStadt == "!pre")
+        {
+            löschen_ultra();
+
+            verarbeiten("Paris");
+
+            verarbeiten("Berlin");
+
+            verarbeiten("Rome");
+
+            verarbeiten("Venice");
+        }
+
+        else if (pStadt == "!fun")
+        {
+            löschen_ultra();
+
+
+            verarbeiten("Simmerath");
+
+            verarbeiten("Elend");
+
+            verarbeiten("Katzenelnbogen");
+
+            verarbeiten("Ende");
+        }
+
+        else
+        {
+
+            verarbeiten(pStadt);
+        }
+    }
+
+    public void verarbeiten(String stadt_p)
+    {
+
+        var forecasts_temp = go.lol(stadt_p);
+
+        forecasts1.Add(forecasts_temp);
+
+        StateHasChanged();
+
+    }
+
+    public void löschen()
+    {
+        forecasts1.Remove(forecasts1[forecasts1.Count - 1]);
+
+        StateHasChanged();
+
+    }
+
+    public void löschen_ultra()
+    {
+
+        forecasts1.Clear();
+
+        StateHasChanged();
+
+    }
+
+
 }
+
+
+@**@
